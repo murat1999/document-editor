@@ -18,11 +18,11 @@ router.post('/', upload.single('file'), async (req, res) => {
             return res.status(400).json({ error: 'No file uploaded.' });
         }
     
-        const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+        const workbook = xlsx.read(req.file.buffer, { type: 'buffer', cellDates: true, });
   
         // Process Customer sheet
         const customerSheet = workbook.Sheets['customer'];
-        const customersData = xlsx.utils.sheet_to_json(customerSheet, { header: 1 });
+        const customersData = xlsx.utils.sheet_to_json(customerSheet, { header: 1, cellDates: true, });
 
         // Check if the sheet has any data
         if (customersData.length === 0 || customersData.length === 1) {
@@ -41,27 +41,38 @@ router.post('/', upload.single('file'), async (req, res) => {
         const nonEmptyCustomerDataRows = customerDataRows.filter(row => row.some(cell => cell !== null && cell !== ''));
     
         // Convert column names to Sequelize model fields for Customer
-        const mappedCustomerData = nonEmptyCustomerDataRows.map(row => {
+        for (const row of nonEmptyCustomerDataRows) {
             const mappedRow = {};
             row.forEach((value, index) => {
               const columnName = customerHeader[index];
               const columnValue = customerColumnMap[columnName];
               mappedRow[columnValue] = value;
             });
-            return mappedRow;
-        });
-    
-        // Insert data into the Customer table
-        await Customer.bulkCreate(mappedCustomerData);
+      
+            // Check if the data already exists in the database based on some criteria (e.g., ID or name)
+            const existingCustomer = await Customer.findOne({
+              where: { id: mappedRow.id }
+            });
+      
+            // If the data does not exist, insert it
+            if (!existingCustomer) {
+              await Customer.create(mappedRow);
+            } else {
+                // If the data exists, update it
+                return res.status(400).json({ error: 'Customer already exists.' });
+            }
+        }
     
         // Process Order sheet
         const orderSheet = workbook.Sheets['order'];
-        const ordersData = xlsx.utils.sheet_to_json(orderSheet, { header: 1 });
+        const ordersData = xlsx.utils.sheet_to_json(orderSheet, { header: 1, cellDates: true, });
 
         if (ordersData.length === 0 || ordersData.length === 1) {
             return res.status(400).json({ error: 'No data or only header row in the file.' });
         }
         const [orderHeader, ...orderDataRows] = ordersData;
+
+        console.log(ordersData)
     
         // Map custom column names to Sequelize model fields for Order
         const orderColumnMap = {
