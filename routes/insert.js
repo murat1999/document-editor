@@ -2,13 +2,11 @@ const express = require('express');
 const router = express.Router();
 const xlsx = require('xlsx');
 const multer = require('multer');
-// const fileUpload = require('express-fileupload');
 
 const Customer = require('../models/Customer');
 const Order = require('../models/Order');
 
 
-// Configure multer for handling file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -49,16 +47,14 @@ router.post('/', upload.single('file'), async (req, res) => {
               mappedRow[columnValue] = value;
             });
       
-            // Check if the data already exists in the database based on some criteria (e.g., ID or name)
+            // Check if the data already exists in the database based on some criteria
             const existingCustomer = await Customer.findOne({
               where: { id: mappedRow.id }
             });
       
-            // If the data does not exist, insert it
             if (!existingCustomer) {
               await Customer.create(mappedRow);
             } else {
-                // If the data exists, update it
                 return res.status(400).json({ error: 'Customer already exists.' });
             }
         }

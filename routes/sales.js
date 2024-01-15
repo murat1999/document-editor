@@ -1,4 +1,3 @@
-// insert this in your routes or a separate file, e.g., salesRoute.js
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');

@@ -23,9 +23,6 @@ routeFiles.forEach(file => {
     console.log
     app.use(routePath, route);
 });
-// app.use('/insert', insertRoute);
-// app.use('/upload', uploadRoute);
-// app.use('/sales', salesRoute);
 
 // Sync the database
 sequelize.sync()
