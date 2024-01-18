@@ -2,11 +2,9 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const bodyParser = require('body-parser');
-const insertRoute = require('./routes/insert');
 
 const sequelize = require('./utils/database');
-const Customer = require('./models/Customer');
-const Order = require('./models/Order');
+const initializeDatabase = require('./utils/initializeDb');
 
 const routesPath = path.join(__dirname, 'routes');
 const routeFiles = fs.readdirSync(routesPath);
@@ -25,13 +23,7 @@ routeFiles.forEach(file => {
 });
 
 // Sync the database
-sequelize.sync()
-  .then(() => {
-    console.log('Database synchronized successfully.');
-  })
-  .catch((error) => {
-    console.error('Error synchronizing database:', error);
-  });
+initializeDatabase();
 
 // Start the server
 
