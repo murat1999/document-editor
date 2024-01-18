@@ -6,7 +6,6 @@ async function initializeDatabase() {
     // Sync the models with the database (create tables if not exist)
     await sequelize.sync({ force: true });
 
-    // Add default records or perform other initialization steps
     await Doc.create({
       content: 'ABCDE',
       version: 0,
